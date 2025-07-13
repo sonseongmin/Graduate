@@ -31,8 +31,9 @@ sudo apt install git</pre>
 
 예시: 
 <pre>git version 2.44.0</pre>
----
+
 ※ 각자 개발 하시는 곳에서 터미널 키셔서 Git Bash로 변경하시고 명령어 입력하시면 됩니다.
+---
 
 ### 2. Git 사용자 정보 등록 (최초 1회만)
 <pre>git config --global user.name "Your Name"

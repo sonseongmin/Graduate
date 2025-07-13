@@ -85,3 +85,23 @@ git commit -m "작업 내용 간단히"</pre>
 
 예시: 
 <pre>git push origin seongmin/backend</pre>
+---
+
+### 4 .gitignore 파일 생성 꼭해주세요!!!(강조x100)
+**예시입니다!! 각자 환경에 맞춰서 작성해주세요!! ignore파일 안 만들고 push하면 나중에 병합할 때 정말 곤란해집니다!!**
+🔸 **Python**
+<pre>__pycache__/
+*.pyc
+.env
+venv/
+.idea/
+.vscode/</pre>
+
+🔸 **flutter**
+<pre>build/
+.dart_tool/
+.packages
+.pub-cache/
+.idea/
+.vscode/
+*.iml</pre>

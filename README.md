@@ -29,7 +29,8 @@ sudo apt install git</pre>
 
 <pre>git --version</pre>
 
-→ 예시: git version 2.44.0
+예시: 
+<pre>git version 2.44.0</pre>
 ---
 
 ### 2. Git 사용자 정보 등록 (최초 1회만)

@@ -104,7 +104,7 @@ git commit -m "작업 내용 간단히"</pre>
 🔸 **Python**
 <pre>__pycache__/
 *.pyc
-.env
+.env # 특히 이거는 push되는 순간 진짜 큰일납니다.
 venv/
 .idea/
 .vscode/</pre>

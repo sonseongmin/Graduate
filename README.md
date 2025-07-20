@@ -45,8 +45,8 @@ git config --global user.email "your-email@example.com"</pre>
 
 ✅ 1) GitHub 레포 복제
 
-<pre>git clone https://github.com/your-id/your-repo.git
-cd your-repo</pre>
+<pre>git clone https://github.com/sonseongmin/Graduate.git
+cd Graduate</pre>
 
 
 

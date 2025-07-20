@@ -47,7 +47,7 @@ git config --global user.email "your-email@example.com"</pre>
 
 <pre>git init</pre>
 
-✅ 2) 원격 저장소 연결
+✅ 2) 원격 저장소 연결 (이건 처음에 연결 할 때만 하면 됩니다.)
 
 <pre>git remote add origin https://github.com/sonseongmin/Graduate</pre>
 
@@ -88,6 +88,10 @@ git commit -m "작업 내용 간단히"</pre>
 
 예시: 
 <pre>git push origin seongmin/backend</pre>
+
+**2번은 첫 설정때만 해주시면 되고, 1 → 3 → 4 → 5 순으로 하시면 됩니다.**
+**1번은 컴퓨터 재부팅이나 작업창을 껐다가 다시 켰을 때나 한 번씩 해주시면 됩니다.**
+
 ---
 
 ### 4 .gitignore 파일 생성 꼭해주세요!!!(강조x100)

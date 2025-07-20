@@ -43,13 +43,12 @@ git config --global user.email "your-email@example.com"</pre>
 
 ### 3. Git 프로젝트 작업 순서
 
-✅ 1) Git 초기화
+✅ 1) GitHub 레포 복제
 
-<pre>git init</pre>
+<pre>git clone https://github.com/your-id/your-repo.git
+cd your-repo</pre>
 
-✅ 2) 원격 저장소 연결
 
-<pre>git remote add origin https://github.com/your-id/your-repo.git</pre>
 
 ✅ 3) 브랜치 생성 및 이동
 

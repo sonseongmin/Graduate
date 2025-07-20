@@ -43,12 +43,13 @@ git config --global user.email "your-email@example.com"</pre>
 
 ### 3. Git 프로젝트 작업 순서
 
-✅ 1) GitHub 레포 복제
+✅ 1) Git 초기화
 
-<pre>git clone https://github.com/sonseongmin/Graduate.git
-cd Graduate</pre>
+<pre>git init</pre>
 
+✅ 2) 원격 저장소 연결
 
+<pre>git remote add origin https://github.com/sonseongmin/Graduate</pre>
 
 ✅ 3) 브랜치 생성 및 이동
 
@@ -100,7 +101,6 @@ git commit -m "작업 내용 간단히"</pre>
 **- ignore파일 안 만들고 push하면 나중에 병합할 때 정말 곤란해집니다!!**
 
 **예시입니다!! 각자 환경에 맞춰서 작성해주세요!!**
-
 🔸 **Python**
 <pre>__pycache__/
 *.pyc

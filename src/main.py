@@ -1,33 +1,28 @@
-from fastapi import FastAPI, UploadFile, File, HTTPException, Form, Request
+from fastapi import FastAPI, UploadFile, File, Form, HTTPException
 from fastapi.responses import JSONResponse
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 import os
-import shutil
-import uuid
-from interview.graph import graph_app
+import fitz  # PyMuPDF
+from io import BytesIO
+from docx import Document
+from interview.chroma_qa import save_qa_pair
 from interview.model import InterviewState
+from interview.nodes import analyze_node, next_question_node, first_question_prompt, llm
 from stt.transcriber import convert_to_wav, transcribe_audio
-from interview.nodes import analyze_node, next_question_node
-
 
 app = FastAPI()
 
-
-# CORS 허용
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
     allow_methods=["*"],
-    allow_headers=["*"]
+    allow_headers=["*"],
 )
 
 UPLOAD_DIR = "temp"
 os.makedirs(UPLOAD_DIR, exist_ok=True)
-
-# 🔹 상태 관리 (간단한 예시 - 실제로는 DB나 Redis로 대체 가능)
 session_state = {}
-
 
 class StateRequest(BaseModel):
     interviewId: str
@@ -35,26 +30,33 @@ class StateRequest(BaseModel):
     text: str
     seq: int = 1
 
+# ✅ /first-ask: 자기소개서 텍스트 기반 질문 생성
 @app.post("/first-ask")
 async def first_ask(payload: StateRequest):
     try:
-        print("📩 [first_ask] 요청 수신:", payload)
-
         state = InterviewState(
             interview_id=payload.interviewId,
             job=payload.job,
             text=payload.text,
-            seq=payload.seq,
+            seq=payload.seq
         )
 
-        # 첫 질문 설정
-        first_question = "자기소개 해보세요"
-        state.questions.append(first_question)
+        prompt = first_question_prompt.format_messages(resume=payload.text)
+        response = llm.invoke(prompt)
+        first_question = response.content.strip()
 
-        print("✅ [first_ask] 질문 생성 완료:", first_question)
+        state.questions.append(first_question)
+        session_state[payload.interviewId] = state
+
+        # ✅ 첫 질문 저장
+        try:
+            save_qa_pair("[FIRST] " + first_question, "")
+            print("✅ [ChromaDB 첫 질문 저장 완료]")
+        except Exception as e:
+            print(f"❌ [첫 질문 저장 실패]: {e}")
 
         return {
-            "interviewId": state.interview_id,
+            "interviewId": payload.interviewId,
             "interview_question": first_question
         }
 
@@ -62,7 +64,7 @@ async def first_ask(payload: StateRequest):
         print(f"❌ [first-ask ERROR]: {e}")
         raise HTTPException(status_code=500, detail=str(e))
 
-# 2. STT 음성 분석 + 답변 저장 + 분석 + 다음 질문
+# ✅ /stt-ask: 영상 업로드 → STT 분석 → 꼬리 질문 생성
 @app.post("/stt-ask")
 async def stt_ask(
     file: UploadFile = File(...),
@@ -70,39 +72,34 @@ async def stt_ask(
     seq: int = Form(...)
 ):
     try:
-        print("🎙️ [stt_ask] 요청 수신:", file.filename)
-
-        # 1. 파일 저장
         input_path = os.path.join(UPLOAD_DIR, file.filename)
         with open(input_path, "wb") as f:
             content = await file.read()
             f.write(content)
 
-        # 2. 변환 (webm/mp4 → wav)
         wav_path = os.path.join(UPLOAD_DIR, "converted.wav")
         convert_to_wav(input_path, wav_path)
-
-        # 3. STT 변환
         transcript = transcribe_audio(wav_path)
-        print("📝 [STT 결과]:", transcript)
 
-        # 4. 상태 구성
-        state = InterviewState(
-            interview_id=interviewId,
-            seq=seq,
-            questions=[],    # 실제 구현에선 DB에서 불러와야 함
-            answers=[]       # 마찬가지
-        )
+        state = session_state.get(interviewId)
+        if not state:
+            raise HTTPException(status_code=404, detail="면접 세션이 없습니다.")
+        # ✅ 이전 질문 저장
+        prev_question = state.questions[-1] if state.questions else ""
 
-        # 5. 답변 저장
         state.answers.append(transcript)
-
-        # 6. 분석 및 다음 질문 생성
         state = analyze_node(state)
         state = next_question_node(state)
+        session_state[interviewId] = state
+         # ✅ 질문-답변 저장
+        try:
+            save_qa_pair(prev_question, transcript)
+            print("✅ [ChromaDB QA 저장 완료]")
+        except Exception as e:
+            print(f"❌ [QA 저장 실패]: {e}")
 
         return {
-            "interviewId": state.interview_id,
+            "interviewId": interviewId,
             "seq": state.seq,
             "interview_answer": transcript,
             "interview_answer_good": state.last_analysis.get("good", ""),
